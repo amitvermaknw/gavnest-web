@@ -1,0 +1,109 @@
+# ──────────────────────────────────────────
+# GavNest Web — .gitignore
+# Stack: Next.js 14, Firebase, GCP, Tailwind
+# ──────────────────────────────────────────
+
+# ── Dependencies ──────────────────────────
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# ── Next.js build output ──────────────────
+.next/
+out/
+build/
+.DS_Store
+
+# ── Environment variables ─────────────────
+# Never commit secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging.local
+
+# ── Firebase ──────────────────────────────
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+.firebaserc.local
+
+# Firebase emulator data
+.emulator-data/
+
+# ── GCP / Cloud Run ───────────────────────
+# Service account keys — NEVER commit these
+*-service-account.json
+*-sa-key.json
+service-account*.json
+gcp-key*.json
+credentials*.json
+application_default_credentials.json
+
+# ── TypeScript ────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Testing ───────────────────────────────
+/coverage
+.nyc_output
+
+# ── Debug logs ────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# ── OS files ──────────────────────────────
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ── Editors & IDEs ────────────────────────
+# VS Code (keep .vscode/extensions.json if you want to share recommended extensions)
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# JetBrains / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+.#*
+\#*#
+
+# ── Misc ──────────────────────────────────
+*.pem
+.vercel
+.netlify
+
+# Optional: local playwright reports
+/playwright-report/
+/test-results/

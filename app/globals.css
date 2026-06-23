@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+
+  ::selection {
+    background: #2A9D8F28;
+    color: #1B5E58;
+  }
+}
+
+@layer utilities {
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+
+  .text-balance { text-wrap: balance; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Primary CTA button — Plus Jakarta Sans via font-display */
+  .btn-primary {
+    @apply inline-flex items-center gap-2
+           bg-teal-500 hover:bg-teal-600
+           text-cream-50 font-display font-bold
+           rounded-xl text-[13.5px]
+           px-6 py-3 transition-all duration-150
+           shadow-md shadow-teal-500/20 hover:shadow-teal-600/25
+           active:scale-[.97]
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-teal-500 focus-visible:ring-offset-2;
+  }
+
+  /* Outline button */
+  .btn-outline {
+    @apply inline-flex items-center gap-2
+           border border-bark-800/15 hover:border-teal-500/40
+           text-bark-800 hover:text-teal-700
+           font-display font-bold
+           rounded-xl text-[13.5px]
+           px-6 py-3 transition-all duration-150
+           bg-white/55 hover:bg-teal-500/5
+           active:scale-[.97]
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-teal-500 focus-visible:ring-offset-2;
+  }
+}
