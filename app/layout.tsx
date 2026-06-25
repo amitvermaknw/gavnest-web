@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans, Inter } from 'next/font/google'
+import { AuthProvider } from '@/components/AuthProvider'
 import './globals.css'
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -43,7 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakarta.variable} ${inter.variable}`}>
       <body className="font-body bg-cream-50 text-bark-800 antialiased">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )

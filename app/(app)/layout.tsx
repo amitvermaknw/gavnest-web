@@ -1,32 +1,50 @@
 // app/(app)/layout.tsx
 // This wraps all authenticated routes — dashboard, phase pages, etc.
-// Firebase Auth guard goes here.
 
-import { redirect } from 'next/navigation'
+'use client'
 
-// TODO: replace with real Firebase auth check
-async function getUser() {
-  // In DEV_MODE, return a mock user
-  if (process.env.DEV_MODE === 'true') {
-    return { uid: 'dev-user', name: 'Amit V.', email: 'dev@gavnest.com' }
-  }
-  return null // triggers redirect to sign-in
-}
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/components/AuthProvider'
+import { hasUserProfile } from '@/lib/firestore'
+import LoadingScreen from '@/components/LoadingScreen'
 
-export default async function AppLayout({
+export default function AppLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const user = await getUser()
+  const { user, loading } = useAuth()
+  const router = useRouter()
+  const [profileChecked, setProfileChecked] = useState(false)
+  const [hasProfile, setHasProfile] = useState(false)
 
-  if (!user) {
-    redirect('/sign-in')
-  }
+  useEffect(() => {
+    if (!loading && !user) router.replace('/sign-in')
+  }, [user, loading, router])
 
-  return (
-    <div className="min-h-screen bg-cream-50">
-      {children}
-    </div>
-  )
+  useEffect(() => {
+    if (!user) return
+    let active = true
+    setProfileChecked(false)
+    hasUserProfile(user.uid).then((exists) => {
+      if (!active) return
+      setHasProfile(exists)
+      setProfileChecked(true)
+    })
+    return () => {
+      active = false
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (profileChecked && !hasProfile) router.replace('/onboarding')
+  }, [profileChecked, hasProfile, router])
+
+  if (loading) return <LoadingScreen />
+  if (!user) return null
+  if (!profileChecked) return <LoadingScreen />
+  if (!hasProfile) return null
+
+  return <div className="min-h-screen bg-cream-50">{children}</div>
 }

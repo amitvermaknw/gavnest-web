@@ -107,3 +107,7 @@ $RECYCLE.BIN/
 # Optional: local playwright reports
 /playwright-report/
 /test-results/
+
+CLAUDE.md
+.env
+.env.local.example
