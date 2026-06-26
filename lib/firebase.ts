@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { initializeFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,4 +13,8 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
 export const auth = getAuth(app)
-export const db = getFirestore(app)
+
+// Auto-detect long polling instead of the default QUIC-based WebChannel —
+// the QUIC transport recovers badly from sleep/wake and network changes,
+// surfacing as ERR_QUIC_PROTOCOL_ERROR / stale-session 400s on the Listen channel.
+export const db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true })

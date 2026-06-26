@@ -36,13 +36,13 @@ export type Insight = {
 // ── User Profile ────────────────────────────────────────
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
-  const ref = doc(db, 'users', uid, 'profile', 'data')
+  const ref = doc(db, 'gavnest/agent/users', uid, 'profile', 'data')
   const snap = await getDoc(ref)
   return snap.exists() ? (snap.data() as UserProfile) : null
 }
 
 export async function setUserProfile(uid: string, profile: UserProfile): Promise<void> {
-  const ref = doc(db, 'users', uid, 'profile', 'data')
+  const ref = doc(db, 'gavnest/agent/users', uid, 'profile', 'data')
   await setDoc(ref, { ...profile, createdAt: serverTimestamp() })
 }
 
@@ -53,7 +53,7 @@ export function hasUserProfile(uid: string): Promise<boolean> {
 // ── Phase Data ──────────────────────────────────────────
 
 export async function getPhaseData(uid: string): Promise<PhaseData> {
-  const ref = doc(db, 'users', uid, 'phases', 'data')
+  const ref = doc(db, 'gavnest/agent/users', uid, 'phases', 'data')
   const snap = await getDoc(ref)
   if (snap.exists()) return snap.data() as PhaseData
 
@@ -75,7 +75,7 @@ export async function getPhaseData(uid: string): Promise<PhaseData> {
 
 export async function advancePhase(uid: string, currentPhase: number): Promise<void> {
   if (currentPhase >= 6) return
-  const ref = doc(db, 'users', uid, 'phases', 'data')
+  const ref = doc(db, 'gavnest/agent/users', uid, 'phases', 'data')
   const data = await getPhaseData(uid)
   const updated = data.phases.map((p) => {
     if (p.num === currentPhase) return { ...p, status: 'Completed', state: 'done' as const }
@@ -88,14 +88,14 @@ export async function advancePhase(uid: string, currentPhase: number): Promise<v
 // ── Actions ─────────────────────────────────────────────
 
 export async function getActions(uid: string, phase: number): Promise<Action[]> {
-  const ref = collection(db, 'users', uid, 'actions')
+  const ref = collection(db, 'gavnest/agent/users', uid, 'actions')
   const q = query(ref, where('phase', '==', phase), orderBy('createdAt'))
   const snap = await getDocs(q)
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Action)
 }
 
 export async function toggleAction(uid: string, actionId: string, completed: boolean): Promise<void> {
-  const ref = doc(db, 'users', uid, 'actions', actionId)
+  const ref = doc(db, 'gavnest/agent/users', uid, 'actions', actionId)
   await updateDoc(ref, { completed })
 }
 
@@ -105,7 +105,7 @@ export function subscribeToActions(
   phase: number,
   callback: (actions: Action[]) => void
 ): () => void {
-  const ref = collection(db, 'users', uid, 'actions')
+  const ref = collection(db, 'gavnest/agent/users', uid, 'actions')
   const q = query(ref, where('phase', '==', phase), orderBy('createdAt'))
   return onSnapshot(q, (snap) => {
     callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Action))
@@ -115,7 +115,7 @@ export function subscribeToActions(
 // ── Insights ────────────────────────────────────────────
 
 export async function getLatestInsight(uid: string, phase: number): Promise<Insight | null> {
-  const ref = collection(db, 'users', uid, 'insights')
+  const ref = collection(db, 'gavnest/agent/users', uid, 'insights')
   const q = query(ref, where('phase', '==', phase), orderBy('createdAt', 'desc'))
   const snap = await getDocs(q)
   if (snap.empty) return null
@@ -129,7 +129,7 @@ export function subscribeToLatestInsight(
   phase: number,
   callback: (insight: Insight | null) => void
 ): () => void {
-  const ref = collection(db, 'users', uid, 'insights')
+  const ref = collection(db, 'gavnest/agent/users', uid, 'insights')
   const q = query(ref, where('phase', '==', phase), orderBy('createdAt', 'desc'))
   return onSnapshot(q, (snap) => {
     if (snap.empty) {

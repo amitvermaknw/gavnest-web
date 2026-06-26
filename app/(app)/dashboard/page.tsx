@@ -146,6 +146,8 @@ export default function DashboardPage() {
   const [insight, setInsight] = useState<Insight | null>(null)
   const [dataLoading, setDataLoading] = useState(true)
   const [chatPrefill, setChatPrefill] = useState<string | null>(null)
+  const [actionsJustLoaded, setActionsJustLoaded] = useState(false)
+  const currentPhase = phaseData?.currentPhase ?? null
 
   function openGavvyChat(prefillMessage?: string) {
     setChatPrefill(prefillMessage ?? null)
@@ -175,12 +177,19 @@ export default function DashboardPage() {
     }
   }, [user, router])
 
-  const currentPhase = phaseData?.currentPhase ?? null
 
   // Step 6: real-time actions for the current phase
   useEffect(() => {
     if (!user || !currentPhase) return
-    const unsub = subscribeToActions(user.uid, currentPhase, setActions)
+    const unsub = subscribeToActions(user.uid, currentPhase, (newActions) => {
+      setActions((prev) => {
+        if (prev.length === 0 && newActions.length > 0) {
+          setActionsJustLoaded(true) // trigger highlight
+          setTimeout(() => setActionsJustLoaded(false), 3000)
+        }
+        return newActions
+      })
+    })
     return unsub
   }, [user, currentPhase])
 
@@ -335,6 +344,14 @@ export default function DashboardPage() {
             </p>
           ) : (
             <div className="flex flex-col gap-3">
+              {actionsJustLoaded && (
+                <div className="flex items-center gap-2 px-1 mb-1">
+                  <span className="text-xs font-body text-teal-600">
+                    ✓ Gavvy just added these based on your conversation
+                  </span>
+                </div>
+              )}
+
               {actions.map((action) => (
                 <ActionItem
                   key={action.id}
@@ -365,7 +382,7 @@ export default function DashboardPage() {
         </button>
       </main>
 
-      <GavvyChat isOpen={chatOpen} onClose={() => setChatOpen(false)} currentPhase={phaseData.currentPhase} prefillMessage={chatPrefill} />
+      <GavvyChat isOpen={chatOpen} onClose={() => setChatOpen(false)} currentPhase={phaseData.currentPhase} prefillMessage={chatPrefill} userProfile={profile} />
     </div>
   )
 }

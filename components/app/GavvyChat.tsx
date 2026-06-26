@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { auth } from '@/lib/firebase'
+import type { UserProfile } from '@/lib/firestore'
 
 type Message = {
   id: string
@@ -14,19 +15,59 @@ export default function GavvyChat({
   isOpen,
   onClose,
   currentPhase,
-  prefillMessage
+  prefillMessage,
+  userProfile
 }: {
   isOpen: boolean
   onClose: () => void
   currentPhase: number
   prefillMessage?: string | null
+  userProfile: UserProfile
 }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [suggestions, setSuggestions] = useState<string[]>([])
 
+  // Phase number → phase_id string mapping
+  const PHASE_ID_MAP: Record<number, string> = {
+    1: 'readiness',
+    2: 'mortgage',
+    3: 'property',
+    4: 'contract',
+    5: 'contract',
+    6: 'closing',
+  }
+
+  // Phase 1 suggestions map — what to offer after Gavvy's first response
+  const PHASE_SUGGESTIONS: Record<string, string[]> = {
+    readiness: [
+      "My gross monthly income is $___",
+      "What's my estimated monthly payment?",
+      "What credit score do I need to qualify?",
+      "How much should I save before buying?",
+    ],
+    mortgage: [
+      "What rate can I expect with my credit score?",
+      "Compare 15-year vs 30-year for my budget",
+      "How do I get pre-approved?",
+      "What documents do lenders need?",
+    ],
+    property: [
+      "Analyze the HOA docs I uploaded",
+      "Check flood zone for this address",
+      "What should I look for at a showing?",
+      "Is this listing price fair?",
+    ],
+    contract: [
+      "Review my purchase agreement",
+      "What contingencies should I include?",
+      "How long does closing take?",
+      "What are my closing costs?",
+    ],
+  }
 
   // Auto-scroll to bottom on new message
   useEffect(() => {
@@ -72,7 +113,7 @@ export default function GavvyChat({
       const token = await user.getIdToken()
 
       // 4. POST to backend
-      const res = await fetch(`${process.env.NEXT_PUBLIC_GAVVY_AGENT_URL}/chat`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_GAVVY_AGENT_URL}/api/v1/gavvy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,8 +121,8 @@ export default function GavvyChat({
         },
         body: JSON.stringify({
           message: text,
-          thread_id: `${user.uid}_phase_${currentPhase}`,
-          user_id: user.uid,
+          phase_id: PHASE_ID_MAP[currentPhase] ?? 'readiness',
+          user_profile: userProfile ?? {},   // pass from dashboard props
         }),
       })
 
@@ -120,6 +161,9 @@ export default function GavvyChat({
               // Mark streaming as complete
               setMessages((prev) => prev.map((m) => (m.id === gavvyId ? { ...m, streaming: false } : m)))
               setStreaming(false)
+              // Show suggested replies for the phase Gavvy just responded in
+              const phaseKey = PHASE_ID_MAP[currentPhase] ?? 'readiness'
+              setSuggestions(PHASE_SUGGESTIONS[phaseKey] ?? [])
             }
 
             if (event.type === 'error') {
@@ -210,6 +254,31 @@ export default function GavvyChat({
           ))}
           <div ref={bottomRef} />
         </div>
+
+        {/* Suggested replies — shown after Gavvy responds */}
+        {suggestions.length > 0 && !streaming && (
+          <div className="px-4 pb-3 flex flex-col gap-2">
+            <p className="text-[10px] font-display font-semibold text-bark-700/40 uppercase tracking-widest">
+              Suggested replies
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => {
+                    setSuggestions([])   // hide after tap
+                    sendMessage(s)       // send as user message
+                  }}
+                  className="text-left text-xs font-body text-teal-700 bg-teal-500/5
+                     border border-teal-500/20 rounded-xl px-3.5 py-2.5
+                     hover:bg-teal-500/10 transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Input */}
         <div className="px-5 py-4 border-t border-cream-200 flex items-end gap-2">
