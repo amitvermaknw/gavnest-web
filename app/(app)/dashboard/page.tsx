@@ -16,6 +16,7 @@ import {
   type Insight,
 } from '@/lib/firestore'
 import GavvyChat from '@/components/app/GavvyChat'
+import GavvyInlineFlow from '@/components/app/GavvyInlineFlow'
 
 /* ─── static product copy (not user data) ────────────────── */
 
@@ -145,14 +146,8 @@ export default function DashboardPage() {
   const [actions, setActions] = useState<Action[]>([])
   const [insight, setInsight] = useState<Insight | null>(null)
   const [dataLoading, setDataLoading] = useState(true)
-  const [chatPrefill, setChatPrefill] = useState<string | null>(null)
   const [actionsJustLoaded, setActionsJustLoaded] = useState(false)
   const currentPhase = phaseData?.currentPhase ?? null
-
-  function openGavvyChat(prefillMessage?: string) {
-    setChatPrefill(prefillMessage ?? null)
-    setChatOpen(true)
-  }
 
   useEffect(() => {
     if (!user) return
@@ -314,33 +309,11 @@ export default function DashboardPage() {
         {/* Next actions */}
         <section className="mb-8">
           <SectionLabel>Your next actions</SectionLabel>
-          {actions.length === 0 && currentPhase === 1 ? (
-            <div className="rounded-2xl bg-teal-500/5 border border-teal-500/20 p-6 flex flex-col gap-4">
-              <div className="flex items-start gap-4">
-                {/* Gavvy avatar */}
-                <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-display font-bold text-white">G</span>
-                </div>
-                <div>
-                  <p className="text-sm font-display font-semibold text-bark-900 mb-1">
-                    Hi! I'm Gavvy — let's figure out if you're ready to buy.
-                  </p>
-                  <p className="text-sm font-body text-bark-700/70 leading-relaxed">
-                    I'll ask you a few quick questions about your finances and
-                    give you an honest picture of where you stand. Takes about 3 minutes.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => openGavvyChat("Am I ready to buy a home? Let's start my readiness check.")}
-                className="btn-primary self-start"
-              >
-                Start my readiness check with Gavvy →
-              </button>
-            </div>
+          {currentPhase === 1 && actions.length === 0 ? (
+            <GavvyInlineFlow phaseId="readiness" />
           ) : actions.length === 0 ? (
             <p className="text-sm text-bark-700/50 font-body">
-              No actions for this phase yet. Ask Gavvy to get started.
+              No actions for this phase yet. Tap &quot;Ask Gavvy&quot; if you have questions.
             </p>
           ) : (
             <div className="flex flex-col gap-3">
@@ -382,7 +355,7 @@ export default function DashboardPage() {
         </button>
       </main>
 
-      <GavvyChat isOpen={chatOpen} onClose={() => setChatOpen(false)} currentPhase={phaseData.currentPhase} prefillMessage={chatPrefill} userProfile={profile} />
+      <GavvyChat isOpen={chatOpen} onClose={() => setChatOpen(false)} currentPhase={phaseData.currentPhase} userProfile={profile} />
     </div>
   )
 }
